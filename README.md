@@ -28,3 +28,60 @@ kubectl get pods -n kube-system | grep kube-proxy
 ```
 kubectl get pods -o wide
 ```
+
+### 1.4 Kiểm tra Pod
+
+```
+kubectl get pods
+```
+
+### 1.5 Kiểm tra Service
+
+```
+kubectl get svc nginx-test-svc
+```
+
+## 2. Ingress
+
+### 2.1 Khi nào KHÔNG cần
+
+- nginx-test chỉ dùng để:
+  - Test cluster
+  - Test network (Calico)
+  - Test Service / NodePort
+- Không phải app thực tế
+- Không cần domain / HTTPS
+
+> Khi đó
+>- NodePort là đủ
+>- Cấu hình bạn đang có là CHUẨN
+
+### 2.2 Trường hợp NÊN cài Ingress
+
+- Muốn minh hoạ kiến trúc chuẩn
+- Muốn:
+  - Truy cập bằng domain
+  - Dùng port 80/443
+  - Nhiều app dùng chung entrypoint
+- Muốn chuẩn bị cho production / CI-CD
+
+> Khi đó
+> - Nginx-test đóng vai trò demo Ingress
+> - Ingress giúp:
+> - Thống nhất kiến trúc
+> - Làm ví dụ cho app thật sau này
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
