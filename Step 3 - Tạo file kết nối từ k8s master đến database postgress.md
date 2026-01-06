@@ -244,7 +244,7 @@ NODE_ENV=production
 ### 12.4. Tạo file Secret (`secret-db.env`)
 
 ```bash
-vi secret-db.env
+nano secret-db.env
 ```
 
 Nội dung:
