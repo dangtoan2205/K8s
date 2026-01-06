@@ -32,7 +32,7 @@ Pod (App) → Service Network → DB Server (Docker PostgreSQL)
 
 | Thành phần   | Giá trị          |
 | ------------ | ---------------- |
-| DB Server IP | `192.168.80.152` |
+| DB Server IP | `192.168.81.152` |
 | DB Port      | `5432`           |
 | DB Name      | `qlts_assets`    |
 | DB User      | `postgres`       |
@@ -51,7 +51,7 @@ Nội dung file:
 
 ```bash
 # Database Configuration
-DB_HOST=192.168.80.152
+DB_HOST=192.168.81.152
 DB_PORT=5432
 DB_NAME=qlts_assets
 DB_USER=postgres
