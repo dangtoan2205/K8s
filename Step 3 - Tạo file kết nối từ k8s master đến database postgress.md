@@ -233,7 +233,7 @@ nano configmap-db.env
 Nội dung:
 
 ```bash
-DB_HOST=192.168.80.152
+DB_HOST=192.168.81.152
 DB_PORT=5432
 DB_NAME=qlts_assets
 DB_USER=postgres
@@ -316,6 +316,13 @@ spec:
             name: qlts-config
         - secretRef:
             name: qlts-secret
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
 ```
 
 ### 12.8. Apply cấu hình mới
@@ -382,3 +389,85 @@ Chuẩn hóa Secret + ConfigMap giúp:
 - Đúng chuẩn Kubernetes production
 - Phù hợp CI/CD và audit
 
+```bash
+ubuntu@k8s-master:~/k8s-qlts/base/app$ ls
+configmap-db.env  deployment.yaml  namespace.yaml  secret-db.env  service.yaml
+```
+
+```bash
+ubuntu@k8s-master:~/k8s-qlts/base/app$ cat configmap-db.env
+DB_HOST=192.168.81.152
+DB_PORT=5432
+DB_NAME=qlts_assets
+DB_USER=postgres
+PORT=5000
+NODE_ENV=production
+```
+
+```bash
+ubuntu@k8s-master:~/k8s-qlts/base/app$ cat deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qlts-app
+  namespace: qlts
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: qlts-app
+  template:
+    metadata:
+      labels:
+        app: qlts-app
+    spec:
+      containers:
+      - name: app
+        image: toandnseta/qlts-cicd:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5000
+        envFrom:
+        - configMapRef:
+            name: qlts-config
+        - secretRef:
+            name: qlts-secret
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+```
+
+```bash
+ubuntu@k8s-master:~/k8s-qlts/base/app$ cat namespace.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: qlts
+```
+
+```bash
+ubuntu@k8s-master:~/k8s-qlts/base/app$ cat service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: qlts-svc
+  namespace: qlts
+spec:
+  type: NodePort
+  selector:
+    app: qlts-app
+  ports:
+  - port: 80
+    targetPort: 5000
+    nodePort: 30081
+```
+
+```bash
+ubuntu@k8s-master:~/k8s-qlts/base/app$ cat secret-db.env
+DB_PASSWORD=password
+JWT_SECRET=your_jwt_secret_key_here
+```
