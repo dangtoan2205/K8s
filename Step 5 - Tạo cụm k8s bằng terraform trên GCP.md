@@ -369,3 +369,66 @@ terraform apply
 ## 7. Sử dụng SSH để kết nối instance GCP
 
 > [Tham khảo link](https://github.com/dangtoan2205/google-cloud/blob/main/S%E1%BB%AD%20d%E1%BB%A5ng%20terraform%20full%20%2B%20s%E1%BB%AD%20d%E1%BB%A5ng%20ssh%20key%20t%E1%BB%AB%20google%20cloud.md)
+
+## 8. Chạy câu lệnh dựng cụm và john master
+
+### 8.1.  All Node setup
+
+```bash
+sudo swapoff -a # disable all swap on your system immediately. Lasts until reboot
+sudo sed -i '/ swap / s/^/#/' /etc/fstab
+ 
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+ 
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-ip6tables=1
+net.ipv4.ip_forward=1
+EOF
+sudo sysctl --system
+ 
+sudo apt install -y containerd
+sudo mkdir -p /etc/containerd
+sudo containerd config default | sudo tee /etc/containerd/config.toml
+ 
+# Change to use systemd cgroup for it works
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+ 
+# Restart and enable it to up to date with new config
+sudo systemctl restart containerd
+sudo systemctl enable containerd
+ 
+ 
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl gpg
+ 
+# Download the public signing key for the Kubernetes package repositories.
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+ 
+# Add the appropriate Kubernetes apt repository
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+ 
+# Update the apt package index, install kubelet, kubeadm and kubectl, and pin their version:
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+```
+ 
+### 8.2. Master node setup
+
+```bash
+sudo kubeadm init \
+  --pod-network-cidr=192.168.0.0/16 \
+  --kubernetes-version=v1.34.0
+ 
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+ 
+kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/manifests/calico.yaml
+```
+ 
+# Worker node join
