@@ -103,6 +103,129 @@ resource "google_compute_firewall" "allow_common" {
   target_tags   = ["k8s-node", "db", "cicd"]
 }
 
+
+########################################
+# Firewall – ICMP (ping) – internal only
+########################################
+resource "google_compute_firewall" "allow_icmp_internal" {
+  name    = "allow-icmp-internal"
+  network = google_compute_network.vpc.name
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "icmp"
+  }
+
+  source_ranges = [var.subnet_cidr]
+
+  target_tags = [
+    "k8s-control-plane",
+    "k8s-node"
+  ]
+}
+
+################################################
+# Firewall – Kubernetes API Server (master only)
+################################################
+resource "google_compute_firewall" "allow_k8s_apiserver" {
+  name    = "allow-k8s-apiserver"
+  network = google_compute_network.vpc.name
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["6443"]
+  }
+
+  source_ranges = [var.subnet_cidr]
+
+  target_tags = ["k8s-control-plane"]
+}
+
+########################################
+# Firewall – Kubelet (master ↔ worker)
+########################################
+resource "google_compute_firewall" "allow_kubelet" {
+  name    = "allow-kubelet"
+  network = google_compute_network.vpc.name
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["10250"]
+  }
+
+  source_ranges = [var.subnet_cidr]
+
+  target_tags = [
+    "k8s-control-plane",
+    "k8s-node"
+  ]
+}
+
+#######################################################
+# Firewall – Control plane internal ports (master only)
+#######################################################
+resource "google_compute_firewall" "allow_control_plane_internal" {
+  name    = "allow-control-plane-internal"
+  network = google_compute_network.vpc.name
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "tcp"
+    ports = [
+      "10257", # controller-manager
+      "10259"  # scheduler
+    ]
+  }
+
+  source_ranges = [var.subnet_cidr]
+
+  target_tags = ["k8s-control-plane"]
+}
+
+############################################
+# Firewall – NodePort services (worker only)
+############################################
+resource "google_compute_firewall" "allow_nodeport" {
+  name    = "allow-nodeport"
+  network = google_compute_network.vpc.name
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["30000-32767"]
+  }
+
+  source_ranges = [var.subnet_cidr]
+
+  target_tags = ["k8s-node"]
+}
+
+###########################################
+# Firewall – Calico VXLAN (worker ↔ worker)
+###########################################
+resource "google_compute_firewall" "allow_calico_vxlan" {
+  name    = "allow-calico-vxlan"
+  network = google_compute_network.vpc.name
+
+  direction = "INGRESS"
+
+  allow {
+    protocol = "udp"
+    ports    = ["8472"]
+  }
+
+  source_ranges = [var.subnet_cidr]
+
+  target_tags = ["k8s-node"]
+}
+
 ########################################
 # VM Instances (FOR_EACH)
 ########################################
@@ -133,11 +256,12 @@ resource "google_compute_instance" "vm" {
 
   tags = each.value.tags
 }
+
 ```
 
 ## 2. Tạo file `outputs.tf`
 
-``bash
+```bash
 output "vm_external_ips" {
   value = {
     for k, v in google_compute_instance.vm :
@@ -166,7 +290,7 @@ instances = {
   k8s-master = {
     machine_type = "e2-small"
     disk_size    = 50
-    tags         = ["k8s-node"]
+    tags         = ["k8s-control-plane"]
   }
 
   k8s-worker-1 = {
@@ -245,44 +369,3 @@ terraform apply
 ## 7. Sử dụng SSH để kết nối instance GCP
 
 > [Tham khảo link](https://github.com/dangtoan2205/google-cloud/blob/main/S%E1%BB%AD%20d%E1%BB%A5ng%20terraform%20full%20%2B%20s%E1%BB%AD%20d%E1%BB%A5ng%20ssh%20key%20t%E1%BB%AB%20google%20cloud.md)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
