@@ -420,7 +420,66 @@ Phải thấy:
 docker exec -it qlts_postgres psql -U postgres -d qlts_assets
 ```
 
-## 6. Ghi nhớ thông tin để dùng cho K8s
+## 6. Mở firewall GCP (BẮT BUỘC)
+
+### 6.1 Firewall rule cho port 5432
+
+> Hiện đang dùng rule chung (đã tạo):
+
+```bash
+allow {
+  protocol = "tcp"
+  ports    = ["5432"]
+}
+```
+
+> 👉 Nếu chưa, bổ sung firewall:
+
+```bash
+gcloud compute firewall-rules create allow-postgres \
+  --network k8s-lab-vpc \
+  --allow tcp:5432 \
+  --source-ranges 10.10.0.0/16
+```
+
+> 🔐 Best practice: chỉ cho subnet K8s truy cập
+
+## 7. Test kết nối từ k8s-master
+
+### 7.1 SSH vào k8s-master
+
+```
+ssh -i keys/gcp_ssh_key.pem ubuntu@<K8S_MASTER_IP>
+```
+
+### 7.2 Cài PostgreSQL client
+
+```bash
+sudo apt update
+sudo apt install -y postgresql-client
+```
+
+### 7.3 Test TCP
+
+```bash
+nc -zv <K8S_DB_PRIVATE_IP> 5432
+```
+
+👉 Nếu OK:
+
+```bash
+Connection to ... 5432 port [tcp/postgresql] succeeded!
+```
+
+### 7.4 Test login DB
+
+```bash
+psql -h <K8S_DB_PRIVATE_IP> -U postgres -d qlts_assets
+```
+
+> Nhập password: `password`
+
+## 8. Ghi nhớ thông tin để dùng cho K8s
 
 | Biến        | Giá trị                   |
 | ----------- | ------------------------- |
