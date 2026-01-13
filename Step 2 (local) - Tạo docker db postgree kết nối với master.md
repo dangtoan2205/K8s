@@ -6,9 +6,8 @@ Tạo docker db postgree kết nối với master
 ```
 k8s-db/
 ├── docker-compose.yml
-└── k8s/
-    └── database/
-        └── schema.sql
+└── database/
+    └── schema.sql
 ```
 
 ## 1.1. File: `docker-compose.yml`
@@ -28,7 +27,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./k8s/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d qlts_assets"]
