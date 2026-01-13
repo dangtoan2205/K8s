@@ -432,3 +432,8 @@ kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.28.0/
 ```
  
 # Worker node join
+
+> Nếu quên kubeadm thì lấy lại token bằng câu lệnh:
+```bash
+kubeadm token create --print-join-command
+```
