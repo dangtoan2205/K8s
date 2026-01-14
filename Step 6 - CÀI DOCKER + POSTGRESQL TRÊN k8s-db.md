@@ -74,8 +74,8 @@ docker version
 ## 2. Chuẩn bị thư mục cho PostgreSQL
 
 ```bash
-mkdir -p ~/k8s-db/postgres
-cd ~/k8s-db/postgres
+mkdir -p ~/k8s-db/database
+cd ~/k8s-db/database
 ```
 
 ## 3. Tạo file và các thư mục liên quan cho PostgreSQL
