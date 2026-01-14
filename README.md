@@ -110,8 +110,19 @@ kubectl get svc -A -o wide
 > - Làm ví dụ cho app thật sau này
 
 
+## 2. CÀI DOCKER + DOCKER COMPOSE
 
+```bash
+sudo apt update
+sudo apt install -y docker.io
+sudo systemctl enable docker
+sudo systemctl start docker
 
+sudo usermod -aG docker $USER
+newgrp docker
+
+sudo apt install -y docker-compose-plugin
+```
 
 
 
