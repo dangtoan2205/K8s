@@ -1,15 +1,15 @@
 Tổng quan Kubernetes (K8s)
+---
 
 Kubernetes là nền tảng orchestration dùng để:
-
-Deploy container
-Scale hệ thống tự động
-Self-healing (tự phục hồi)
-Load balancing
-Quản lý networking, storage, secret, config
+- Deploy container
+- Scale hệ thống tự động
+- Self-healing (tự phục hồi)
+- Load balancing
+- Quản lý networking, storage, secret, config
 
 Kiến trúc K8s được chia thành 2 phần chính:
-
+```
 +----------------------+
 |   Control Plane      |
 | (Quản lý Cluster)    |
@@ -20,7 +20,9 @@ Kiến trúc K8s được chia thành 2 phần chính:
 |      Worker Node     |
 | (Chạy ứng dụng)      |
 +----------------------+
-1. KIẾN TRÚC TỔNG THỂ K8S
+```
+
+# 1. KIẾN TRÚC TỔNG THỂ K8S
 
 <img width="750" height="761" alt="image" src="https://github.com/user-attachments/assets/4e320896-57c1-4b34-9419-5c355ad517b2" />
 
@@ -28,63 +30,62 @@ Kiến trúc K8s được chia thành 2 phần chính:
 
 <img width="1290" height="860" alt="image" src="https://github.com/user-attachments/assets/e0bb7559-0b79-40ae-bf81-08da170f48a7" />
 
-2. CONTROL PLANE (MASTER NODE)
+# 2. CONTROL PLANE (MASTER NODE)
 
 Control Plane là “bộ não” của cluster.
 
 Nhiệm vụ:
+- Quản lý toàn bộ cluster
+- Scheduling
+- Theo dõi trạng thái
+- API quản trị
+- Điều phối container
+- Thành phần chính
 
-Quản lý toàn bộ cluster
-Scheduling
-Theo dõi trạng thái
-API quản trị
-Điều phối container
-Thành phần chính
-2.1 kube-apiserver
+## 2.1 kube-apiserver
 
 Là cổng giao tiếp trung tâm của K8s.
 
 Mọi thao tác đều đi qua API Server:
-
+```
 kubectl apply
 kubectl get pods
 helm install
-
+```
 → đều gọi tới:
-
+```
 kube-apiserver
-
+```
 Vai trò:
+- Nhận request
+- Validate
+- Authentication / Authorization
+- Giao tiếp etcd
+- Trả kết quả
 
-Nhận request
-Validate
-Authentication / Authorization
-Giao tiếp etcd
-Trả kết quả
-2.2 etcd
+## 2.2 etcd
 
 Database dạng key-value.
 
 Lưu:
-
-Config cluster
-Secret
-Pod info
-Node info
-Deployment state
+- Config cluster
+- Secret
+- Pod info
+- Node info
+- Deployment state
 
 Ví dụ:
-
+```
 desired replicas = 3
-
+```
 Nếu etcd mất:
 → cluster gần như “mất não”.
 
 Thực tế production:
+- luôn backup etcd
+- chạy HA etcd cluster
 
-luôn backup etcd
-chạy HA etcd cluster
-2.3 kube-scheduler
+## 2.3 kube-scheduler
 
 Scheduler quyết định:
 
